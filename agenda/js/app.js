@@ -5,7 +5,8 @@
     mapUrl:"",
     bank:"Solicita a Fisioterapia 5 la cuenta y referencia vigentes antes de realizar tu transferencia.",
     appointmentStorage:"fisio5Appointments",
-    patientStorage:"fisio5Patients"
+    patientStorage:"fisio5Patients",
+    patientSyncStorage:"fisio5PatientSyncQueue"
   };
   const AGENDA_ROOT=window.__agendaRoot||document;
   const $=selector=>AGENDA_ROOT.querySelector(selector);
@@ -39,11 +40,15 @@
   const readList=key=>{try{const value=JSON.parse(localStorage.getItem(key));return Array.isArray(value)?value:[]}catch{return[]}};
   const getAppointments=()=>readList(CONFIG.appointmentStorage);
   const getPatients=()=>readList(CONFIG.patientStorage);
+  const getPatientSyncQueue=()=>readList(CONFIG.patientSyncStorage);
+  let patientSyncPromise=null;
+  function updatePatientSyncStatus(message=""){const element=$("#patientSyncStatus");if(!element)return;const pending=getPatientSyncQueue().length;element.textContent=message||(pending?`${pending} ${pending===1?"cambio pendiente":"cambios pendientes"} de sincronizar`:"Pacientes sincronizados")}
+  function queuePatientChanges(changes){const pending=new Map(getPatientSyncQueue().map(change=>[change.id,change]));changes.forEach(change=>pending.set(change.id,{...change,queueId:uid(),queuedAt:new Date().toISOString()}));localStorage.setItem(CONFIG.patientSyncStorage,JSON.stringify([...pending.values()]));updatePatientSyncStatus()}
+  async function flushPatientSyncQueue({notify=false}={}){if(patientSyncPromise)return patientSyncPromise;patientSyncPromise=(async()=>{const initial=getPatientSyncQueue();if(!initial.length){updatePatientSyncStatus();return true}if(!window.CloudPatients?.ready?.()||!window.CloudPatients?.isUnlocked?.()||navigator.onLine===false){updatePatientSyncStatus("Guardado en este dispositivo · pendiente de sincronizar");return false}let failed=false;for(const change of initial){try{if(change.type==="delete")await window.CloudPatients.remove(change.id);else await window.CloudPatients.upsert(change.patient);const current=getPatientSyncQueue();localStorage.setItem(CONFIG.patientSyncStorage,JSON.stringify(current.filter(item=>item.id!==change.id||item.queueId!==change.queueId)))}catch(error){failed=true;console.warn("No se pudo sincronizar el paciente:",error.message)}}const pending=getPatientSyncQueue().length;if(failed||pending){updatePatientSyncStatus("Guardado en este dispositivo · pendiente de sincronizar");if(notify)toast("Paciente guardado; falta sincronizarlo en la nube");return false}updatePatientSyncStatus("Pacientes sincronizados");if(notify)toast("Paciente guardado y sincronizado");return true})().finally(()=>{patientSyncPromise=null});return patientSyncPromise}
   const savePatients=items=>{
     const before=getPatients(),beforeById=new Map(before.map(item=>[item.id,item])),afterIds=new Set(items.map(item=>item.id));
     localStorage.setItem(CONFIG.patientStorage,JSON.stringify(items));
-    items.forEach(item=>{const old=beforeById.get(item.id);if(!old||old.updatedAt!==item.updatedAt)window.CloudPatients?.upsert(item).catch(()=>{})});
-    before.forEach(item=>{if(!afterIds.has(item.id))window.CloudPatients?.remove(item.id).catch(()=>{})});
+    const changes=[];items.forEach(item=>{const old=beforeById.get(item.id);if(!old||old.updatedAt!==item.updatedAt)changes.push({type:"upsert",id:item.id,patient:item})});before.forEach(item=>{if(!afterIds.has(item.id))changes.push({type:"delete",id:item.id})});if(changes.length)queuePatientChanges(changes);return flushPatientSyncQueue();
   };
   const getPatient=id=>getPatients().find(item=>item.id===id);
   const getService=id=>SERVICES.find(item=>item.id===id)||{id:id||"service",name:legacyServiceName(id)};
@@ -85,15 +90,15 @@
   async function hydratePatients(){
     if(!window.CloudPatients?.list)return null;
     try{
-      const cloud=await window.CloudPatients.list();
+      await flushPatientSyncQueue();const cloud=await window.CloudPatients.list();
       if(!Array.isArray(cloud))return null;
-      const local=getPatients(),cloudById=new Map(cloud.map(item=>[item.id,item])),merged=new Map(cloudById);
+      const local=getPatients(),pendingDeletes=new Set(getPatientSyncQueue().filter(change=>change.type==="delete").map(change=>change.id)),cloudById=new Map(cloud.filter(item=>!pendingDeletes.has(item.id)).map(item=>[item.id,item])),merged=new Map(cloudById);
       local.forEach(item=>{
         const remote=cloudById.get(item.id),localIsNewer=!remote||String(item.updatedAt||"")>String(remote.updatedAt||"");
-        if(localIsNewer){merged.set(item.id,item);window.CloudPatients.upsert(item).catch(()=>{})}
+        if(localIsNewer){merged.set(item.id,item);queuePatientChanges([{type:"upsert",id:item.id,patient:item}])}
       });
       localStorage.setItem(CONFIG.patientStorage,JSON.stringify([...merged.values()]));
-      fillPatientOptions();render();
+      await flushPatientSyncQueue();fillPatientOptions();render();updatePatientSyncStatus();
       return[...merged.values()];
     }catch(error){console.warn("Se usará la copia local de pacientes:",error.message);return null}
   }
@@ -266,14 +271,24 @@
     if(!name||number.length<10){error.textContent="Completa el nombre y un WhatsApp válido.";return}
     if(sessions<0||sessions>size){error.textContent=size?`Las sesiones restantes deben estar entre 0 y ${size}.`:"Selecciona un paquete antes de agregar sesiones.";return}
     const now=new Date().toISOString(),record={...current,id:id||uid(),name,phone:number,diagnosis:$("#patientDiagnosis").value.trim(),treatment:$("#patientTreatment").value.trim(),packageSize:size,sessionsRemaining:size?sessions:0,createdAt:current?.createdAt||now,updatedAt:now};
-    savePatients(current?patients.map(item=>item.id===record.id?record:item):[...patients,record]);
-    $("#patientEditorDialog").close();renderPatients();fillPatientOptions();render();toast(id?"Paciente actualizado":"Paciente guardado");
+    const sync=savePatients(current?patients.map(item=>item.id===record.id?record:item):[...patients,record]);
+    $("#patientEditorDialog").close();renderPatients();fillPatientOptions();render();toast(id?"Paciente actualizado en este dispositivo":"Paciente guardado en este dispositivo");sync.then(synced=>toast(synced?"Paciente guardado y sincronizado":"Paciente guardado; pendiente de sincronizar"));
   }
   function deletePatient(){
     const id=$("#patientId").value,patient=getPatient(id);if(!patient||!confirm(`¿Quieres eliminar el expediente de ${patient.name}?`))return;
-    savePatients(getPatients().filter(item=>item.id!==id));
+    const sync=savePatients(getPatients().filter(item=>item.id!==id));
     saveAppointments(getAppointments().map(item=>item.patientId===id?{...item,patientId:"",packageUsed:false,packageSize:0,packageRemainingAfter:0,updatedAt:new Date().toISOString()}:item));
-    $("#patientEditorDialog").close();renderPatients();fillPatientOptions();render();toast("Paciente eliminado");
+    $("#patientEditorDialog").close();renderPatients();fillPatientOptions();render();toast("Paciente enviado a la papelera");sync.then(synced=>{if(!synced)toast("Eliminación pendiente de sincronizar")});
+  }
+  async function openPatientTrash(){
+    const dialog=$("#patientTrashDialog"),list=$("#patientTrashList");dialog.showModal();list.innerHTML='<div class="summary-empty">Consultando papelera…</div>';
+    try{
+      await flushPatientSyncQueue();const records=await window.CloudPatients.trash();
+      list.innerHTML=records.length?records.map(entry=>{const patient=entry.record||{},deletedAt=entry.deletedAt?new Date(entry.deletedAt).toLocaleString("es-MX"):"";return `<article class="patient-card"><div><strong>${escapeHTML(patient.name||"Paciente")}</strong><span>${escapeHTML(patient.phone||"")}</span><small>Eliminado: ${escapeHTML(deletedAt)}</small></div><button class="secondary-btn" type="button" data-restore-patient="${escapeHTML(patient.id||"")}">Restaurar</button></article>`}).join(""):'<div class="summary-empty">La papelera está vacía.</div>';
+    }catch(error){console.warn("No se pudo consultar la papelera:",error.message);list.innerHTML='<div class="summary-empty">No se pudo consultar la papelera. Intenta nuevamente.</div>'}
+  }
+  async function restoreDeletedPatient(id){
+    if(!id)return;try{const restored=await window.CloudPatients.restore(id);if(!restored)throw new Error("No se encontró el paciente");await hydratePatients();renderPatients();fillPatientOptions();$("#patientTrashDialog").close();toast("Paciente restaurado y sincronizado")}catch(error){console.warn("No se pudo restaurar el paciente:",error.message);toast("No se pudo restaurar el paciente")}
   }
   function syncPackageMaximum(){const size=Number($("#patientPackage").value)||0,input=$("#patientSessions");input.max=String(size);if(!size)input.value="0";else if(Number(input.value)>size||Number(input.value)===0)input.value=String(size)}
 
@@ -319,6 +334,7 @@
   }
 
   $("#serviceSelect").innerHTML=SERVICES.map(item=>`<option value="${item.id}">${item.name}</option>`).join("");
+  const patientTitle=$("#patientsDialog .dialog-title-row");if(patientTitle&&!$("#patientTrashBtn")){const trashButton=document.createElement("button");trashButton.id="patientTrashBtn";trashButton.type="button";trashButton.className="secondary-btn";trashButton.textContent="Papelera";patientTitle.append(trashButton)}if(patientTitle&&!$("#patientSyncStatus")){const status=document.createElement("small");status.id="patientSyncStatus";status.className="dialog-copy";patientTitle.insertAdjacentElement("afterend",status)}if(!$("#patientTrashDialog")){const trashDialog=document.createElement("dialog");trashDialog.id="patientTrashDialog";trashDialog.className="patients-dialog";trashDialog.innerHTML='<button class="dialog-close" data-close-dialog aria-label="Cerrar">×</button><p class="eyebrow">Recuperación</p><h2>Papelera de pacientes</h2><p class="dialog-copy">Los expedientes eliminados pueden restaurarse.</p><div class="patient-list" id="patientTrashList"></div>';$("#patientsDialog").insertAdjacentElement("afterend",trashDialog)}updatePatientSyncStatus();
   $("#todayText").textContent=new Date().toLocaleDateString("es-MX",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
   $("#newAppointmentBtn").onclick=openNewAppointment;
   $("#appointmentForm").onsubmit=saveAppointment;
@@ -337,6 +353,8 @@
   $("#patientList").onclick=event=>{const button=event.target.closest("[data-edit-patient]");if(button)openPatientEditor(button.dataset.editPatient)};
   $("#patientForm").onsubmit=savePatient;
   $("#deletePatientBtn").onclick=deletePatient;
+  $("#patientTrashBtn").onclick=openPatientTrash;
+  $("#patientTrashList").onclick=event=>{const button=event.target.closest("[data-restore-patient]");if(button)restoreDeletedPatient(button.dataset.restorePatient)};
   $("#patientPackage").onchange=syncPackageMaximum;
 
   $("#paymentBtn").onclick=()=>{$("#paymentForm").reset();$("#paymentDialog").showModal()};
@@ -353,6 +371,7 @@
   pruneLocalAppointments();fillPatientOptions();render();window.refreshAgenda=()=>{fillPatientOptions();render()};
   window.CloudAppointments?.hydrate(items=>localStorage.setItem(CONFIG.appointmentStorage,JSON.stringify(items))).then(()=>render());
   hydratePatients();
+  window.addEventListener("online",()=>flushPatientSyncQueue({notify:true}));window.addEventListener("offline",()=>updatePatientSyncStatus("Sin conexión · los cambios se sincronizarán después"));
 })();
 
 

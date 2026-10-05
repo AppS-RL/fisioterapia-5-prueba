@@ -28,6 +28,8 @@
   async function availability(){if(!ready())return[];const result=await get("availability");return Array.isArray(result.busy)?result.busy:[]}
   async function upsertAppointment(appointment){if(!ready())return false;await post("upsert",appointment,Boolean(token()));return true}
   async function removeRecord(id){if(!ready())return false;await post("delete",{id},true);return true}
+  async function restoreRecord(id){if(!ready())return false;const result=await post("restore",{id},true);return result.restored===true}
+  async function listTrash(){if(!ready())return[];const result=await post("trash",null,true);return Array.isArray(result.records)?result.records:[]}
 
   window.CloudAppointments={
     ready,isUnlocked:()=>Boolean(token()),
@@ -38,7 +40,7 @@
   };
 
   const patientPayload=patient=>({...patient,recordType:"patient",area:"Paciente",status:"Expediente",notes:[patient.diagnosis?`Diagnóstico: ${patient.diagnosis}`:"",patient.treatment?`Tratamiento: ${patient.treatment}`:"",Number(patient.packageSize)?`Paquete: ${patient.packageSize} sesiones · ${Number(patient.sessionsRemaining)||0} restantes`:"Sin paquete activo"].filter(Boolean).join("\n")});
-  window.CloudPatients={ready,isUnlocked:()=>Boolean(token()),list:listPatients,upsert:async patient=>{if(!ready())return false;await post("upsert",patientPayload(patient),true);return true},remove:removeRecord};
+  window.CloudPatients={ready,isUnlocked:()=>Boolean(token()),list:listPatients,upsert:async patient=>{if(!ready())return false;await post("upsert",patientPayload(patient),true);return true},remove:removeRecord,restore:restoreRecord,trash:listTrash};
 })();
 
 
