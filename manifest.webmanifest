@@ -1,0 +1,23 @@
+{
+  "name": "Fisioterapia 5",
+  "short_name": "Fisioterapia 5",
+  "description": "Agenda y reservaciones de Fisioterapia 5.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4fafb",
+  "theme_color": "#27546b",
+  "icons": [
+    {
+      "src": "assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
+

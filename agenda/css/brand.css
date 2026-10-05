@@ -1,0 +1,70 @@
+/* Agenda de fisioterapia · Paleta azul, verde y celeste */
+:root{
+  --wine:#27546b;
+  --wine2:#1d4357;
+  --rose:#8fc096;
+  --blush:#cbe6c7;
+  --cream:#f4fafb;
+  --sand:#b4e0ee;
+  --ink:#244657;
+  --muted:#627985;
+  --line:#cfe2e2;
+  --white:#fff;
+  --green:#5d9569;
+  --shadow:0 14px 38px #27546b14;
+}
+body{background:var(--cream)}
+.back-site-link{color:var(--wine2);font-size:12px;font-weight:700;text-decoration:none}.back-site-link:hover{text-decoration:underline}
+.service-builder{margin:16px 0;padding:14px;border:1px solid var(--line);border-radius:16px;background:var(--cream)}
+.service-builder-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+.service-builder-head .secondary-btn{padding:9px 12px;white-space:nowrap}
+.service-row{display:grid;grid-template-columns:minmax(100px,.65fr) minmax(150px,1.35fr) minmax(120px,1fr) minmax(110px,.8fr) auto;gap:8px;align-items:end;padding:12px 0;border-top:1px solid var(--line)}
+.service-row:first-child{border-top:0}.service-row label{margin:0}.service-row .remove-service{min-height:42px;border:0;border-radius:12px;padding:0 12px;background:#fff0e9;color:#a64242;font-weight:700;cursor:pointer}
+.service-builder>small{display:block;color:var(--muted);margin-top:8px}
+@media(max-width:720px){.service-row{grid-template-columns:1fr 1fr}.service-row .remove-service{grid-column:1/-1}.service-builder-head{align-items:flex-start;flex-direction:column}}
+.topbar{height:94px;background:#fff;border-bottom-color:var(--line)}
+.brand{gap:11px;color:var(--wine2)}
+.brand-logo-wrap{width:84px;height:84px;display:grid;place-items:center;background:transparent;overflow:visible}
+.brand-logo{width:84px;height:84px;object-fit:contain;display:block}
+.brand-placeholder{width:58px;height:58px;border-radius:50%;background:linear-gradient(145deg,var(--rose),#e35e74);color:#fff;font:700 13px "DM Sans",sans-serif;letter-spacing:.08em;box-shadow:0 9px 22px #f06f6a33}
+.brand-name{display:flex;flex-direction:column;white-space:nowrap;line-height:1.05}
+.brand-name small{margin-bottom:4px;color:var(--rose);font:700 9px "DM Sans",sans-serif;letter-spacing:.08em;text-transform:uppercase}
+.private-label span{background:var(--rose);box-shadow:0 0 0 4px #ffe2dc}
+.eyebrow{color:#d65f5b}
+.welcome h1,.stats strong,.agenda-head h2,.appointment-time,.empty-state strong,dialog h2{color:var(--wine2)}
+.primary-btn{background:var(--rose);box-shadow:0 10px 24px #f06f6a2e}.primary-btn:hover{background:#df5c58}
+.stats article,.agenda-card,.quick-actions>button{border-color:var(--line);box-shadow:var(--shadow)}
+.stat-icon.blush{background:#ffe1d5;color:#dc625b}.stat-icon.sand{background:var(--sand);color:#815e17}.stat-icon.green{background:#dff1e7;color:#347b5d}
+.icon-btn,.today-btn,.more-btn,.secondary-btn{background:#ffded0;color:var(--wine2)}
+.today-btn{background:#ffd8c7}
+.appointment-item:hover{border-color:#f0b2a9;box-shadow:0 8px 22px #7d5a4612}
+.service-line{background:var(--rose)}
+.message-btn{background:#dff1e7;color:#347b5d}
+.quick-actions>button>span,.empty-state span{background:#ffe1d5;color:#d65f5b}
+input,select,textarea{background:#fffdfa}
+dialog::backdrop{background:#392c3180}
+@media(max-width:500px){
+  .topbar{height:78px}
+  .brand-logo-wrap,.brand-logo{width:58px;height:58px}
+  .brand-name{display:none}
+}
+
+/* Ajustes finales de la paleta fisioterapia */
+.brand-placeholder{background:linear-gradient(145deg,#8fc096,#27546b);box-shadow:0 9px 22px #27546b33}
+.primary-btn{background:#27546b;box-shadow:0 10px 24px #27546b2e}.primary-btn:hover{background:#1d4357}
+.stat-icon.blush{background:#cbe6c7;color:#27546b}.stat-icon.sand{background:#b4e0ee;color:#27546b}.stat-icon.green{background:#dcefd9;color:#517f59}
+.quick-actions>button>span,.empty-state span{background:#cbe6c7;color:#27546b}
+.service-row .remove-service{background:#e8f4e6;color:#27546b}
+.today-btn{background:#b4e0ee}.appointment-item:hover{border-color:#9dccd0;box-shadow:0 8px 22px #27546b12}
+.message-btn{background:#dcefd9;color:#27546b}input,select,textarea{background:#f8fcfd}dialog::backdrop{background:#193d4d80}
+
+.check-row{display:flex;align-items:center;gap:10px;padding:11px 13px;border:1px solid var(--line);border-radius:12px;background:var(--cream)}
+.check-row input{width:18px;height:18px;margin:0}.check-row span{color:var(--ink);font-weight:600}
+.package-banner{display:grid;gap:4px;padding:14px 16px;border:1px solid #9dcfa4;border-radius:14px;background:#e8f5e7;color:var(--wine2)}
+.package-banner span,.package-banner small{color:var(--muted)}.package-inline{color:var(--green)!important;font-weight:700}
+.dialog-title-row{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px}.dialog-title-row h2{margin:0}
+.patients-dialog{width:min(94vw,760px)}.patient-list{display:grid;gap:10px;margin-top:18px}
+.patient-card{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:15px;border:1px solid var(--line);border-radius:14px;background:var(--cream)}
+.patient-card strong,.patient-card span,.patient-card small{display:block}.patient-card span,.patient-card small{margin-top:3px;color:var(--muted);font-size:12px}.patient-card .package-active{color:var(--green);font-weight:700}
+.package-fields{margin:0;padding:16px;border:1px solid var(--line);border-radius:14px}.package-fields legend{padding:0 7px;color:var(--wine);font-size:12px;font-weight:700}
+@media(max-width:620px){.dialog-title-row,.patient-card{align-items:stretch;flex-direction:column}}

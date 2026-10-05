@@ -1,0 +1,17 @@
+.appointment-amount {
+  display: grid;
+  min-width: 86px;
+  text-align: right;
+}
+
+.appointment-amount small {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+@media (max-width: 760px) {
+  .appointment-amount {
+    min-width: 72px;
+  }
+}

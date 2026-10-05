@@ -1,0 +1,45 @@
+.message-options {
+  display: grid;
+  gap: 11px;
+}
+
+.message-options > button {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  background: var(--cream);
+  color: var(--ink);
+  text-align: left;
+}
+
+.message-options > button:hover {
+  border-color: var(--rose);
+  background: #fff;
+}
+
+.message-options > button > span {
+  display: grid;
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border-radius: 12px;
+  background: var(--blush);
+  color: var(--wine);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.message-options strong,
+.message-options small {
+  display: block;
+}
+
+.message-options small {
+  margin-top: 3px;
+  color: var(--muted);
+}

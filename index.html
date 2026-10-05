@@ -1,0 +1,630 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#27546b" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Fisioterapia 5" />
+    <meta
+      name="description"
+      content="Agenda en línea de Fisioterapia 5 para fisioterapia, rehabilitación y movimiento."
+    />
+    <title>Fisioterapia 5 · Fisioterapia y rehabilitación</title>
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="assets/apple-touch-icon.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="assets/favicon-32.png"
+    />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/styles.css?v=fisio53" />
+    <script src="js/cloud-config.js?v=fisio51"></script>
+    <script src="js/cloud-sync.js?v=fisio51"></script>
+  </head>
+  <body>
+    <header class="site-header" id="publicHeader">
+      <a class="brand" href="#inicio" aria-label="Fisioterapia 5, ir al inicio"
+        ><span class="brand-mark">F5</span
+        ><span>Fisioterapia 5 <em>Fisioterapia</em></span></a
+      ><a class="admin-link" id="adminBtn" href="#mi-agenda">Mi agenda</a>
+    </header>
+    <main>
+      <section class="hero" id="inicio">
+        <div class="hero-copy">
+          <p class="eyebrow">Fisioterapia · Rehabilitación y movimiento</p>
+          <h1>Recupera tu<br /><em>movimiento.</em></h1>
+          <p class="hero-text">
+            Agenda tu valoración o tratamiento en pocos pasos y comienza tu
+            proceso de recuperación.
+          </p>
+          <button class="primary-btn" id="startBookingBtn">
+            Reservar una cita <span>→</span>
+          </button>
+          <p class="microcopy">Confirmación inmediata en pantalla</p>
+        </div>
+        <div class="hero-art" aria-hidden="true">
+          <span class="polish polish-one"></span
+          ><span class="polish polish-two"></span><span class="sparkle">✦</span>
+          <p>Muévete mejor.<br />Vive mejor.</p>
+        </div>
+      </section>
+      <section class="booking view" id="bookingView" hidden>
+        <button class="text-btn" data-go-home>← Volver al inicio</button>
+        <div class="section-heading">
+          <p class="eyebrow">Reserva en línea</p>
+          <h2>Agenda tu cita</h2>
+          <p>Elige el servicio, la fecha y el horario que prefieras.</p>
+        </div>
+        <div class="booking-layout">
+          <div class="booking-main">
+            <section class="step-card" id="serviceStep">
+              <div class="step-title">
+                <span>1</span>
+                <div>
+                  <h3>Elige tu servicio</h3>
+                  <p>Selecciona el tipo de atención que necesitas.</p>
+                </div>
+              </div>
+              <div class="service-grid" id="serviceGrid"></div>
+              <div class="selected-services" id="selectedServices" hidden>
+                <div class="selected-services-head">
+                  <strong>Servicio seleccionado</strong
+                  ><small>Puedes cambiarlo antes de confirmar.</small>
+                </div>
+                <div id="selectedServiceList"></div>
+              </div>
+            </section>
+            <section class="step-card is-locked" id="dateStep">
+              <div class="step-title">
+                <span>2</span>
+                <div>
+                  <h3>Fecha y hora</h3>
+                  <p>Consulta los espacios disponibles.</p>
+                </div>
+              </div>
+              <div class="calendar-header">
+                <button
+                  class="icon-btn"
+                  id="prevMonth"
+                  aria-label="Mes anterior"
+                >
+                  ←</button
+                ><strong id="monthLabel"></strong
+                ><button
+                  class="icon-btn"
+                  id="nextMonth"
+                  aria-label="Mes siguiente"
+                >
+                  →
+                </button>
+              </div>
+              <div class="weekdays">
+                <span>L</span><span>M</span><span>M</span><span>J</span
+                ><span>V</span><span>S</span><span>D</span>
+              </div>
+              <div class="calendar" id="calendar"></div>
+              <div class="times-wrap" id="timesWrap" hidden>
+                <p class="times-title" id="selectedDateLabel"></p>
+                <div class="time-grid" id="timeGrid"></div>
+              </div>
+            </section>
+            <section class="step-card is-locked" id="detailsStep">
+              <div class="step-title">
+                <span>3</span>
+                <div>
+                  <h3>Tus datos</h3>
+                  <p>Los usaremos únicamente para gestionar tu cita.</p>
+                </div>
+              </div>
+              <form id="bookingForm" novalidate>
+                <div class="form-row">
+                  <label
+                    >Nombre completo<input
+                      id="clientName"
+                      autocomplete="name"
+                      required
+                      placeholder="Tu nombre" /></label
+                  ><label
+                    >WhatsApp<input
+                      id="clientPhone"
+                      type="tel"
+                      autocomplete="tel"
+                      inputmode="tel"
+                      required
+                      placeholder="10 dígitos"
+                  /></label>
+                </div>
+                <label
+                  >Notas <span class="optional">(opcional)</span
+                  ><textarea
+                    id="clientNotes"
+                    rows="3"
+                    placeholder="Cuéntanos brevemente el motivo de consulta, molestias o indicaciones médicas"
+                  ></textarea></label
+                ><label class="check"
+                  ><input id="policyCheck" type="checkbox" required /><span
+                    >Acepto las
+                    <button
+                      class="inline-btn"
+                      id="showPoliciesBtn"
+                      type="button"
+                    >
+                      políticas de cancelación</button
+                    >.</span
+                  ></label
+                >
+                <p class="form-error" id="formError"></p>
+                <button class="primary-btn full" type="submit">
+                  Confirmar cita <span>→</span>
+                </button>
+              </form>
+            </section>
+          </div>
+          <aside class="summary-card">
+            <p class="eyebrow">Tu cita</p>
+            <div id="liveSummary" class="empty-summary">
+              Selecciona un servicio para comenzar.
+            </div>
+          </aside>
+        </div>
+      </section>
+      <section class="confirmation view" id="confirmationView" hidden>
+        <div class="success-mark">✓</div>
+        <p class="eyebrow">Reserva guardada</p>
+        <h2>¡Gracias por tu cita!</h2>
+        <p>
+          Tu espacio quedó reservado. Fisioterapia 5 se pondrá en contacto contigo para
+          compartir cualquier indicación necesaria.
+        </p>
+        <div class="confirmation-card" id="confirmationSummary"></div>
+        <button class="location-btn" id="openLocationBtn" hidden>
+          Consultar ubicación</button
+        ><button class="text-btn centered" data-go-home>
+          Volver al inicio
+        </button>
+      </section>
+      <section class="admin view" id="adminView" hidden>
+        <div class="admin-head">
+          <div>
+            <p class="eyebrow">Administración</p>
+            <h2>Agenda de Fisioterapia 5</h2>
+            <p>Consulta, edita o cancela tus próximas citas.</p>
+          </div>
+          <button class="text-btn" data-go-home>Cerrar agenda</button>
+        </div>
+        <div class="admin-toolbar">
+          <label>Ver citas del día<input id="adminDate" type="date" /></label
+          ><button class="secondary-btn" id="todayBtn">Hoy</button
+          ><button class="secondary-btn" id="paymentBtn">
+            Compartir información de pago
+          </button>
+        </div>
+        <div class="appointment-list" id="appointmentList"></div>
+      </section>
+      <section class="agenda-embedded view" id="agendaView" hidden></section>
+    </main>
+    <footer>
+      <span>Fisioterapia 5</span
+      ><span>Fisioterapia · Rehabilitación · Movimiento</span>
+    </footer>
+    <dialog id="policiesDialog">
+      <button class="dialog-close" data-close-dialog>×</button>
+      <p class="eyebrow">Antes de reservar</p>
+      <h3>Políticas de cancelación</h3>
+      <ul>
+        <li>
+          Para cancelar o reagendar, avísanos con al menos 48 horas de
+          anticipación.
+        </li>
+        <li>Después de 10 minutos de retraso, la cita podrá cancelarse.</li>
+        <li>Una cita puede reagendarse un máximo de dos veces.</li>
+      </ul>
+      <button class="primary-btn full" data-close-dialog>Entendido</button>
+    </dialog>
+    <dialog id="adminAccessDialog">
+      <button class="dialog-close" data-close-dialog>×</button>
+      <p class="eyebrow">Acceso privado</p>
+      <h3>Entrar a Mi agenda</h3>
+      <p class="dialog-copy">
+        Escribe la clave administrativa para consultar y modificar las citas.
+      </p>
+      <form id="adminAccessForm">
+        <label
+          >Clave de acceso<input
+            id="adminAccessKey"
+            type="password"
+            required
+            autocomplete="current-password"
+            placeholder="Clave administrativa"
+        /></label>
+        <p class="form-error" id="adminAccessError"></p>
+        <button class="primary-btn full" type="submit">
+          Entrar a Mi agenda
+        </button>
+      </form>
+    </dialog>
+    <dialog id="appointmentDialog">
+      <button class="dialog-close" data-close-dialog>×</button>
+      <p class="eyebrow">Editar cita</p>
+      <h3>Datos de la reservación</h3>
+      <form id="editForm">
+        <input id="editId" type="hidden" /><label
+          >Nombre<input id="editName" required /></label
+        ><label>WhatsApp<input id="editPhone" type="tel" required /></label
+        ><label>Servicio<select id="editService"></select></label>
+        <div class="form-row">
+          <label>Fecha<input id="editDate" type="date" required /></label
+          ><label>Hora<select id="editTime"></select></label>
+        </div>
+        <label>Notas<textarea id="editNotes" rows="3"></textarea></label>
+        <div class="dialog-actions">
+          <button class="danger-btn" id="cancelAppointmentBtn" type="button">
+            Cancelar cita</button
+          ><button class="primary-btn" type="submit">Guardar cambios</button>
+        </div>
+      </form>
+    </dialog>
+    <dialog id="paymentDialog">
+      <button class="dialog-close" data-close-dialog>×</button>
+      <p class="eyebrow">Transferencia</p>
+      <h3>Compartir información de pago</h3>
+      <p class="dialog-copy">
+        Escribe el WhatsApp del paciente. Los datos solo se enviarán cuando tú
+        lo decidas.
+      </p>
+      <form id="paymentForm">
+        <label
+          >Número de WhatsApp<input
+            id="paymentPhone"
+            type="tel"
+            required
+            placeholder="10 dígitos" /></label
+        ><button class="whatsapp-btn full" type="submit">
+          Enviar por WhatsApp
+        </button>
+      </form>
+    </dialog>
+    <div class="toast" id="toast"></div>
+    <template id="agendaTemplate"
+      ><link rel="stylesheet" href="agenda/css/styles.css" /><link
+        rel="stylesheet"
+        href="agenda/css/brand.css" /><link
+        rel="stylesheet"
+        href="agenda/css/finance.css" /><link
+        rel="stylesheet"
+        href="agenda/css/messages.css" /><link
+        rel="stylesheet"
+        href="agenda/css/summary.css" /><link
+        rel="stylesheet"
+        href="agenda/css/backup.css" />
+      <header class="topbar">
+        <button
+          class="brand embedded-back"
+          type="button"
+          aria-label="Volver al sitio de reservaciones"
+        >
+          <span class="brand-logo-wrap brand-placeholder" aria-hidden="true"
+            >F5</span
+          ><span class="brand-name"
+            ><small>Fisioterapia</small>Fisioterapia 5</span
+          >
+        </button>
+        <div class="topbar-status">
+          <button class="back-site-link embedded-back" type="button">
+            Ver sitio
+          </button>
+          <p class="private-label"><span></span> Agenda privada</p>
+        </div>
+      </header>
+      <main class="app-shell">
+        <section class="welcome">
+          <div>
+            <p class="eyebrow" id="todayText"></p>
+            <h1>Hola, bienvenido.</h1>
+            <p>Aquí tienes todo lo que necesitas para organizar tu día.</p>
+          </div>
+          <button class="primary-btn" id="newAppointmentBtn">
+            <span>＋</span> Nueva cita
+          </button>
+        </section>
+        <section class="stats" aria-label="Resumen del día">
+          <article>
+            <span class="stat-icon blush">♡</span>
+            <div>
+              <strong id="appointmentCount">0</strong>
+              <p>Citas del día</p>
+            </div>
+          </article>
+          <article>
+            <span class="stat-icon sand">◷</span>
+            <div>
+              <strong id="nextTime">—</strong>
+              <p>Próxima cita</p>
+            </div>
+          </article>
+          <article>
+            <span class="stat-icon green">$</span>
+            <div>
+              <strong id="dayIncome">$0</strong>
+              <p>Ingresos estimados</p>
+            </div>
+          </article>
+        </section>
+        <section class="agenda-card">
+          <div class="agenda-head">
+            <div>
+              <p class="eyebrow">Mi agenda</p>
+              <h2 id="dateTitle"></h2>
+            </div>
+            <div class="date-controls">
+              <button
+                class="icon-btn"
+                id="previousDay"
+                aria-label="Día anterior"
+              >
+                ←</button
+              ><button class="today-btn" id="todayBtn">Hoy</button
+              ><button class="icon-btn" id="nextDay" aria-label="Día siguiente">
+                →</button
+              ><input id="datePicker" type="date" aria-label="Elegir fecha" />
+            </div>
+          </div>
+          <div class="appointment-list" id="appointmentList"></div>
+        </section>
+        <section class="quick-actions">
+          <button id="summaryBtn">
+            <span>▦</span>
+            <div>
+              <strong>Ver resumen</strong
+              ><small>Consulta citas e ingresos</small>
+            </div></button
+          ><button id="paymentBtn">
+            <span>↗</span>
+            <div>
+              <strong>Compartir información de pago</strong
+              ><small>Prepara el mensaje para el paciente</small>
+            </div></button
+          ><button id="policiesBtn">
+            <span>i</span>
+            <div>
+              <strong>Ver políticas</strong
+              ><small
+                >Consulta el texto que se envía con cada confirmación</small
+              >
+            </div></button
+          ><button id="backupBtn">
+            <span>↓</span>
+            <div>
+              <strong>Respaldo de citas</strong
+              ><small>Descarga o recupera la información de la agenda</small>
+            </div>
+          </button>
+        </section>
+      </main>
+      <dialog id="appointmentDialog">
+        <button class="dialog-close" data-close-dialog aria-label="Cerrar">
+          ×
+        </button>
+        <p class="eyebrow" id="formEyebrow">Nueva cita</p>
+        <h2 id="formTitle">Agendar cita</h2>
+        <form id="appointmentForm" novalidate>
+          <input id="appointmentId" type="hidden" />
+          <div class="form-row">
+            <label
+              >Nombre del paciente<input
+                id="clientName"
+                required
+                autocomplete="name"
+                placeholder="Nombre completo" /></label
+            ><label
+              >WhatsApp<input
+                id="clientPhone"
+                type="tel"
+                required
+                inputmode="tel"
+                autocomplete="tel"
+                placeholder="10 dígitos"
+            /></label>
+          </div>
+          <label
+            >Área<select id="areaSelect" required>
+              <option value="valuation">Valoración</option>
+              <option value="followup">Seguimiento</option>
+              <option value="valuation_treatment">Valoración y tratamiento</option>
+              <option value="revaluation">Revaloración</option>
+            </select></label
+          >
+          <div class="service-builder">
+            <div class="service-builder-head">
+              <b>Servicio de fisioterapia</b
+              ><button class="secondary-btn" id="addServiceBtn" type="button">
+                ＋ Agregar servicio
+              </button>
+            </div>
+            <div id="serviceRows"></div>
+            <small
+              >Selecciona el servicio indicado para esta cita.</small
+            >
+          </div>
+          <div class="form-row">
+            <label
+              >Fecha<input id="appointmentDate" type="date" required /></label
+            ><label>Hora<select id="appointmentTime" required></select></label>
+          </div>
+          <div class="form-row">
+            <label
+              >Precio acordado <span>(opcional)</span
+              ><input
+                id="appointmentPrice"
+                type="number"
+                min="0"
+                step="1"
+                inputmode="decimal"
+                placeholder="$0" /></label
+            >
+          </div>
+          <label
+            >Notas <span>(opcional)</span
+            ><textarea
+              id="appointmentNotes"
+              rows="3"
+              placeholder="Indicaciones o detalles adicionales"
+            ></textarea>
+          </label>
+          <p class="form-error" id="formError"></p>
+          <div class="form-actions">
+            <button class="danger-btn" id="deleteBtn" type="button" hidden>
+              Cancelar cita</button
+            ><button class="primary-btn" type="submit">Guardar cita</button>
+          </div>
+        </form>
+      </dialog>
+      <dialog id="paymentDialog">
+        <button class="dialog-close" data-close-dialog aria-label="Cerrar">
+          ×
+        </button>
+        <p class="eyebrow">Transferencia</p>
+        <h2>Compartir información de pago</h2>
+        <p class="dialog-copy">
+          Escribe el WhatsApp del paciente para preparar la información de pago
+          de Fisioterapia 5.
+        </p>
+        <form id="paymentForm">
+          <label
+            >Número de WhatsApp<input
+              id="paymentPhone"
+              type="tel"
+              required
+              inputmode="tel"
+              placeholder="10 dígitos" /></label
+          ><button class="whatsapp-btn" type="submit">Abrir WhatsApp</button>
+        </form>
+      </dialog>
+      <dialog id="messageDialog">
+        <button class="dialog-close" data-close-dialog aria-label="Cerrar">
+          ×
+        </button>
+        <p class="eyebrow">WhatsApp</p>
+        <h2 id="messageDialogTitle">Mensaje para el paciente</h2>
+        <p class="dialog-copy">Elige el mensaje que deseas preparar.</p>
+        <div class="message-options">
+          <button type="button" data-message-type="confirmation">
+            <span>✓</span>
+            <div>
+              <strong>Confirmar cita</strong
+              ><small>Fecha, horario, servicio, ubicación y políticas</small>
+            </div></button
+          ><button type="button" data-message-type="reminder">
+            <span>◷</span>
+            <div>
+              <strong>Enviar recordatorio</strong
+              ><small>Un mensaje breve con los datos de la cita</small>
+            </div></button
+          ><button type="button" data-message-type="cancellation">
+            <span>×</span>
+            <div>
+              <strong>Avisar cancelación</strong
+              ><small>Notifica la cancelación e invita a reagendar</small>
+            </div>
+          </button>
+        </div>
+      </dialog>
+      <dialog id="summaryDialog" class="summary-dialog">
+        <button class="dialog-close" data-close-dialog aria-label="Cerrar">
+          ×
+        </button>
+        <p class="eyebrow">Actividad</p>
+        <h2>Resumen de la agenda</h2>
+        <div class="summary-tabs" role="group" aria-label="Periodo del resumen">
+          <button type="button" class="active" data-summary-period="week">
+            Esta semana</button
+          ><button type="button" data-summary-period="month">Este mes</button>
+        </div>
+        <p class="summary-range" id="summaryRange"></p>
+        <div class="summary-metrics">
+          <article>
+            <small>Citas</small><strong id="summaryAppointments">0</strong>
+          </article>
+          <article>
+            <small>Ingresos</small><strong id="summaryIncome">$0</strong>
+          </article>
+          <article>
+            <small>Pacientes</small><strong id="summaryPatients">0</strong>
+          </article>
+        </div>
+        <div class="summary-list" id="summaryList"></div>
+      </dialog>
+      <dialog id="backupDialog" class="backup-dialog">
+        <button class="dialog-close" data-close-dialog aria-label="Cerrar">
+          ×
+        </button>
+        <p class="eyebrow">Seguridad</p>
+        <h2>Respaldo de citas</h2>
+        <p class="dialog-copy">
+          Guarda una copia de la agenda y úsala para recuperar las citas en este
+          u otro dispositivo.
+        </p>
+        <div class="backup-count">
+          <span>♡</span>
+          <div>
+            <strong id="backupAppointmentCount">0 citas y 0 pacientes</strong
+            ><small
+              >Incluye diagnóstico, tratamiento y paquetes activos.</small
+            >
+          </div>
+        </div>
+        <div class="backup-actions">
+          <button type="button" class="primary-btn" id="exportBackupBtn">
+            ↓ Descargar respaldo</button
+          ><label class="backup-upload"
+            >↑ Restaurar respaldo<input
+              id="importBackupInput"
+              type="file"
+              accept=".json,application/json"
+          /></label>
+        </div>
+        <p class="backup-note">
+          Al restaurar, las citas del archivo se combinarán con las existentes.
+        </p>
+        <p class="form-error" id="backupError"></p>
+      </dialog>
+      <dialog id="policiesDialog">
+        <button class="dialog-close" data-close-dialog aria-label="Cerrar">
+          ×
+        </button>
+        <p class="eyebrow">Fisioterapia 5</p>
+        <h2>Políticas de citas</h2>
+        <p class="dialog-copy">
+          Buscamos cuidar el tiempo de cada paciente y brindar el mejor servicio.
+        </p>
+        <ul>
+          <li>
+            Para cancelar o reagendar, avísanos con al menos 48 horas de
+            anticipación.
+          </li>
+          <li>
+            Después de 10 minutos de retraso, la cita podrá cancelarse.
+          </li>
+          <li>Una cita puede reagendarse un máximo de dos veces.</li>
+        </ul>
+        <button class="secondary-btn full" data-close-dialog>Entendido</button>
+      </dialog>
+      <div class="toast" id="toast" role="status"></div
+    ></template>
+    <script src="js/app.js?v=fisio53"></script>
+  </body>
+</html>
+
